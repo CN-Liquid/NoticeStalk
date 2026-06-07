@@ -1,0 +1,236 @@
+import 'package:notice_stalk/core/result.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+import 'package:notice_stalk/core/notice.dart';
+
+class NoticeDatabase {
+  NoticeDatabase._init();
+
+  static Database? _database;
+
+  static Future<Result<Database>> get database async {
+    if (_database != null) {
+      return Result.success(_database!);
+    }
+
+    final result = await _initDB('notices.db');
+
+    return result;
+  }
+
+  static Future<Result<Database>> _initDB(String filePath) async {
+    try {
+      final dbPath = await getDatabasesPath();
+      final path = join(dbPath, filePath);
+
+      final db = await openDatabase(path, version: 1, onCreate: _createDB);
+
+      _database = db;
+
+      return Result.success(db);
+    } catch (e) {
+      return Result.failure('Unable to initialize database $e');
+    }
+  }
+
+  static Future _createDB(Database db, int version) async {
+    await db.execute("""CREATE TABLE Notices (
+    date TEXT,
+    details TEXT,
+    link TEXT,
+    docLink TEXT NULL,
+    docPath TEXT NULL,
+    PRIMARY KEY (date,details)
+    )""");
+
+    await db.execute(
+      """ CREATE TABLE Pages (page INT , cursor STRING NULL) """,
+    );
+  }
+
+  static Future<Result<void>> close() async {
+    if (_database == null) {
+      return Result.success(null);
+    }
+
+    try {
+      await _database!.close();
+      _database = null;
+
+      return Result.success(null);
+    } catch (e) {
+      return Result.failure('Unable to close the database cleanly : $e');
+    }
+  }
+
+  static Future<Result<bool>> insert(Notice notice) async {
+    final result = await database;
+    bool isInserted = false;
+
+    if (!result.isSuccess) {
+      return Result.failure(result.error!);
+    }
+
+    final noticeResult = await fetchNotice(
+      date: notice.date,
+      details: notice.details,
+    );
+
+    if (!noticeResult.isSuccess &&
+        noticeResult.error == 'Notice not found in database') {
+      isInserted = true;
+    } else if (!noticeResult.isSuccess) {
+      return Result.failure(noticeResult.error!);
+    }
+
+    try {
+      final db = result.data!;
+      await db.rawInsert(
+        'INSERT OR REPLACE INTO Notices(date,details,link,docLink,docPath) VALUES(?,?,?,?,?)',
+        [
+          notice.date,
+          notice.details,
+          notice.link,
+          notice.docLink,
+          notice.docPath,
+        ],
+      );
+
+      return Result.success(isInserted);
+    } catch (e) {
+      return Result.failure('Unable to insert into the database : $e');
+    }
+  }
+
+  static Future<Result<List<Map<String, dynamic>>>> fetchAllNotices() async {
+    final result = await database;
+
+    if (!result.isSuccess) {
+      return Result.failure(result.error!);
+    }
+
+    try {
+      final data = await result.data!.query('Notices');
+      return Result.success(data);
+    } catch (e) {
+      return Result.failure('Unable to query the database : $e');
+    }
+  }
+
+  static Future<Result<List<Map<String, dynamic>>>> fetchNotices({
+    int page = 0,
+    String searchText = '',
+  }) async {
+    final result = await database;
+
+    if (!result.isSuccess) {
+      return Result.failure(result.error!);
+    }
+
+    try {
+      List<Map<String, Object?>> data;
+
+      if (searchText.isNotEmpty) {
+        final formattedText = '%$searchText%';
+        data = await result.data!.query(
+          'Notices',
+          limit: 6,
+          offset: 6 * page,
+          orderBy: 'date DESC',
+          where: 'details LIKE ?',
+          whereArgs: [formattedText],
+        );
+      } else {
+        data = await result.data!.query(
+          'Notices',
+          limit: 6,
+          offset: 6 * page,
+          orderBy: 'date DESC',
+        );
+      }
+
+      return Result.success(data);
+    } catch (e) {
+      return Result.failure('Unable to query the database : $e');
+    }
+  }
+
+  static Future<Result<Notice>> fetchNotice({
+    required String date,
+    required String details,
+  }) async {
+    final result = await database;
+
+    if (!result.isSuccess) {
+      return Result.failure(result.error!);
+    }
+
+    try {
+      final data = await result.data!.query(
+        'Notices',
+        where: 'date = ? AND details = ?',
+        whereArgs: [date, details],
+      );
+
+      if (data.isEmpty) {
+        return Result.failure('Notice not found in database');
+      }
+
+      final row = data.first;
+      return Result.success(
+        Notice(
+          date: row['date'] as String,
+          details: row['details'] as String,
+          link: row['link'] as String,
+          docLink: row['docLink'] as String,
+          docPath: row['docPath'] as String?,
+        ),
+      );
+    } catch (e) {
+      return Result.failure('Unable to query the database : $e');
+    }
+  }
+
+  static Future<Result<void>> insertCursor(int page, String cursor) async {
+    final result = await database;
+
+    if (!result.isSuccess) {
+      return Result.failure(result.error!);
+    }
+
+    try {
+      final db = result.data;
+
+      await db!.insert('Pages', {'page': page, 'cursor': cursor});
+
+      return Result.success(null);
+    } catch (e) {
+      return Result.failure('Unable to insert into the pages table : $e');
+    }
+  }
+
+  static Future<Result<String?>> getCursor(int page) async {
+    if (page == 0) {
+      return Result.success('');
+    }
+
+    final result = await database;
+
+    if (!result.isSuccess) {
+      return Result.failure(result.error!);
+    }
+
+    try {
+      final db = result.data;
+      final cursor = await db!.query(
+        'Pages',
+        where: 'page = ?',
+        whereArgs: [page],
+      );
+
+      return Result.success(cursor.first['cursor'].toString());
+    } catch (e) {
+      return Result.failure('Error in inserting cursor : $e');
+    }
+  }
+}
