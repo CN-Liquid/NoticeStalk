@@ -4,6 +4,7 @@ import 'package:notice_stalk/core/background_task_handler.dart';
 import 'package:notice_stalk/view/ioe_exam.dart';
 import 'package:notice_stalk/core/notification.dart';
 import 'package:workmanager/workmanager.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +22,13 @@ void main() async {
   if (!notificationInitResult.isSuccess) {
     Logger().e(notificationInitResult.error!);
   }
+
+  final status = await Permission.notification.status;
+
+  if (status.isDenied) {
+    await Permission.notification.request();
+  }
+
   runApp(const MyApp());
 }
 

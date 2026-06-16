@@ -7,16 +7,21 @@ import 'package:notice_stalk/core/notification.dart';
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     if (task == 'check_for_updates') {
-      final result = await NoticeRepository.fetchNotices();
+      final newNotices = await NoticeRepository.fetchNotices();
 
-      if (!result.isSuccess) {
-        Logger().e(result.error);
+      if (!newNotices.isSuccess) {
+        NotificationManager.show(
+          title: 'Failed to fetch notices',
+          details: newNotices.error!,
+        );
+        Logger().e(newNotices.error);
         return Future.value(false);
-      } else if (result.data!.isEmpty) {
+      } else if (newNotices.data!.isEmpty) {
         logger.d('No new notices');
+       
         return Future.value(true);
       }
-      final notices = result.data!;
+      final notices = newNotices.data!;
       await NotificationManager.initialize();
       for (final data in notices) {
         NotificationManager.show(title: data['details'], details: data['date']);

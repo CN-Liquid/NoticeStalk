@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:notice_stalk/repository/repository.dart';
 import 'package:notice_stalk/view/notice_page.dart';
 import 'package:logger/logger.dart';
+import 'package:notice_stalk/view/permissions.dart';
 
 final logger = Logger();
 
@@ -63,7 +64,26 @@ class _IoeExamState extends State<IoeExam> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(title: Center(child: Text('IOE Exam'))),
+        drawer: Drawer(
+          child: ListView(
+            children: [
+              ListTile(
+                title: Text('Permissions'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return Permissions();
+                      },
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        appBar: AppBar(title: Text('IOE Exam'), centerTitle: true),
         body: isLoading
             ? Center(child: CircularProgressIndicator())
             : Column(
