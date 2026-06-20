@@ -49,4 +49,33 @@ class FileStorage {
       return Result.failure('Error saving the file : $e');
     }
   }
+
+  static Future<Result<Map<String, int>>> getDirectorySize(
+    Directory dir,
+  ) async {
+    int tempNumberOfFiles = 0;
+    int tempTotalSize = 0;
+
+    if (!await dir.exists()) {
+      return Result.failure('The directory doesnot exist');
+    }
+
+    try {
+      final stream = dir.list(recursive: true, followLinks: false);
+
+      await for (final FileSystemEntity entity in stream) {
+        if (entity is File) {
+          tempNumberOfFiles++;
+          tempTotalSize = tempTotalSize + await entity.length();
+        }
+      }
+
+      return Result.success({
+        'numberOfFiles': tempNumberOfFiles,
+        'totalSize': tempTotalSize ~/ (1024 * 1024),
+      });
+    } catch (e) {
+      return Result.failure('Unable to calculate directory size : $e');
+    }
+  }
 }
