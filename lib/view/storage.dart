@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:notice_stalk/repository/repository.dart';
 import 'package:notice_stalk/repository/storage/file_storage.dart';
 
 // TODO : Wire up the clear button function
@@ -17,6 +18,7 @@ class _StoragePageState extends State<StoragePage> {
   FileStat? metadata;
   int numberOfFiles = 0;
   int totalSize = 0;
+  bool isClearPressed = false;
 
   @override
   void initState() {
@@ -38,18 +40,42 @@ class _StoragePageState extends State<StoragePage> {
       metadata = tempMetadata;
     });
 
-    fetchDirectorySize(downloadsDirectory!);
+    fetchDirectorySize();
   }
 
-  Future<void> fetchDirectorySize(Directory dir) async {
-    final result = await FileStorage.getDirectorySize(dir);
+  Future<void> fetchDirectorySize() async {
+    final result = await FileStorage.getDirectorySize(downloadsDirectory!);
 
     if (!result.isSuccess) {
       Logger().e(result.error);
     }
 
-    numberOfFiles = result.data!['numberOfFiles']!;
-    totalSize = result.data!['totalSize']!;
+    setState(() {
+      numberOfFiles = result.data!['numberOfFiles']!;
+      totalSize = result.data!['totalSize']!;
+    });
+  }
+
+  Future<void> clearData() async {
+    if (downloadsDirectory == null) {
+      logger.e('Downloads directory is null');
+      return;
+    }
+    setState(() {
+      isClearPressed = true;
+    });
+    final result = await FileStorage.deleteDirectoryContents(
+      downloadsDirectory!,
+    );
+    setState(() {
+      isClearPressed = false;
+      fetchDirectorySize();
+    });
+
+    if (!result.isSuccess) {
+      logger.e(result.error);
+      return;
+    }
   }
 
   @override
@@ -63,7 +89,11 @@ class _StoragePageState extends State<StoragePage> {
             Text('Number of files : $numberOfFiles'),
             Text('Total size : $totalSize MB'),
             TextButton(
-              onPressed: () {},
+              onPressed: (isClearPressed)
+                  ? null
+                  : () {
+                      clearData();
+                    },
               style: ButtonStyle(
                 shape: WidgetStateProperty.all(
                   RoundedRectangleBorder(

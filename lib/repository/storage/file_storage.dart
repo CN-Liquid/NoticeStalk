@@ -78,4 +78,17 @@ class FileStorage {
       return Result.failure('Unable to calculate directory size : $e');
     }
   }
+
+  static Future<Result<void>> deleteDirectoryContents(Directory dir) async {
+    final newDir = Directory('${dir.path}/notice_stalk');
+    if (!(await newDir.exists())) {
+      return Result.success(null);
+    }
+    try {
+      await newDir.delete(recursive: true);
+      return Result.success(null);
+    } catch (e) {
+      return Result.failure('Unable to delete directory : $e');
+    }
+  }
 }
