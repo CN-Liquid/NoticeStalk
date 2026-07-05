@@ -4,11 +4,14 @@ import 'package:html/parser.dart';
 import 'package:logger/logger.dart';
 
 class IoePc {
-  static List<Map<String, dynamic>> notices = [];
-  static final client = Dio();
-  static const url = 'https://www.ioepc.edu.np/info/category/notice/page';
+  IoePc._private();
 
-  static Future<bool> retrieve({int page = 0}) async {
+  static final IoePc instance = IoePc._private();
+  List<Map<String, dynamic>> notices = [];
+  final client = Dio();
+  final url = 'https://www.ioepc.edu.np/info/category/notice/page';
+
+  Future<bool> retrieve({int page = 0}) async {
     dom.Document? document;
 
     final modifiedUrl = '$url/${page + 1}';
@@ -39,7 +42,7 @@ class IoePc {
     return false;
   }
 
-  static List<Map<String, dynamic>> convertToList(List<dom.Element> data) {
+  List<Map<String, dynamic>> convertToList(List<dom.Element> data) {
     return data.map((d) {
       return {
         'date': d.querySelector('h7.text-muted')!.text.trim(),
@@ -50,7 +53,7 @@ class IoePc {
     }).toList();
   }
 
-  static Future<String?> getDocumentLink(String noticeLink) async {
+  Future<String?> getDocumentLink(String noticeLink) async {
     final response = await client.get(noticeLink);
     final document = parse(response.data);
     try {

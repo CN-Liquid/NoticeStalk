@@ -30,7 +30,7 @@ class _NoticePageState extends State<NoticePage> {
   }
 
   Future<void> _getFile() async {
-    final result = await NoticeRepository.getFile(
+    final result = await NoticeRepository.instance.getFile(
       date: widget.date,
       details: widget.details,
     );

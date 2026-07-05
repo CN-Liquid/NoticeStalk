@@ -4,18 +4,21 @@ import 'package:html/parser.dart';
 import 'package:logger/logger.dart';
 
 class IoeExam {
-  static List<Map<String, dynamic>> notices = [];
-  static final client = Dio();
-  static const url = 'https://exam.ioe.tu.edu.np/notices';
+  IoeExam._private();
 
-  static Future<bool> retrieve({int page = 0}) async {
+  static final IoeExam instance = IoeExam._private();
+  List<Map<String, dynamic>> notices = [];
+  final dioClient = Dio();
+  final url = 'https://exam.ioe.tu.edu.np/notices';
+
+  Future<bool> retrieve({int page = 0}) async {
     dom.Document? document;
     String cursor = '';
 
     for (int i = 0; i <= page; i++) {
       final modifiedUrl = '$url?cursor=$cursor';
 
-      final res = await client.get(modifiedUrl);
+      final res = await dioClient.get(modifiedUrl);
 
       document = parse(res.data);
 
@@ -34,12 +37,12 @@ class IoeExam {
     return false;
   }
 
-  static Future<bool> retrieveByCursor(String prevCursor) async {
+  Future<bool> retrieveByCursor(String prevCursor) async {
     dom.Document? document;
 
     final modifiedUrl = '$url?cursor=$prevCursor';
 
-    final res = await client.get(modifiedUrl);
+    final res = await dioClient.get(modifiedUrl);
 
     document = parse(res.data);
 
@@ -67,7 +70,7 @@ class IoeExam {
     return false;
   }
 
-  static List<Map<String, dynamic>> convertToList(List<dom.Element> data) {
+  List<Map<String, dynamic>> convertToList(List<dom.Element> data) {
     return data.map((d) {
       return {
         'date': d.querySelector('.date')!.text.trim(),
@@ -78,8 +81,8 @@ class IoeExam {
     }).toList();
   }
 
-  static Future<String?> getDocumentLink(String noticeLink) async {
-    final response = await client.get(noticeLink);
+  Future<String?> getDocumentLink(String noticeLink) async {
+    final response = await dioClient.get(noticeLink);
     final document = parse(response.data);
     try {
       final link = document
@@ -95,13 +98,13 @@ class IoeExam {
     }
   }
 
-  static Future<String?> getCursor(String prevCursor) async {
+  Future<String?> getCursor(String prevCursor) async {
     dom.Document? document;
     String? cursor;
 
     final modifiedUrl = '$url?cursor=$prevCursor';
 
-    final res = await client.get(modifiedUrl);
+    final res = await dioClient.get(modifiedUrl);
 
     document = parse(res.data);
 

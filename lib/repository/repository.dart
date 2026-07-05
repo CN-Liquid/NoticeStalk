@@ -9,9 +9,12 @@ import 'package:notice_stalk/core/result.dart';
 final logger = Logger();
 
 class NoticeRepository {
-  NoticeRepository._init();
+  NoticeRepository._private();
+  static final NoticeRepository instance = NoticeRepository._private();
 
-  static Future<Result<List<Map<String, dynamic>>>> getNotices({
+  final client = IoeExam.instance;
+
+  Future<Result<List<Map<String, dynamic>>>> getNotices({
     int page = 0,
     String searchText = '',
   }) async {
@@ -46,7 +49,7 @@ class NoticeRepository {
     return result;
   }
 
-  static Future<Result<List<Map<String, dynamic>>>> fetchNotices({
+  Future<Result<List<Map<String, dynamic>>>> fetchNotices({
     int page = 0,
   }) async {
     final cursor = await getCursor(page);
@@ -59,9 +62,9 @@ class NoticeRepository {
 
     logger.d('Fetching');
 
-    bool isFetched = await IoeExam.retrieveByCursor(cursor.data!);
+    bool isFetched = await client.retrieveByCursor(cursor.data!);
     if (isFetched) {
-      final notices = IoeExam.notices;
+      final notices = client.notices;
 
       if (notices.isEmpty) {
         return Result.failure('There are no notices in this page');
@@ -100,7 +103,7 @@ class NoticeRepository {
     return Result.failure('Unable to reach to the network');
   }
 
-  static Future<Result<String?>> getFile({
+  Future<Result<String?>> getFile({
     required String date,
     required String details,
   }) async {
@@ -152,7 +155,7 @@ class NoticeRepository {
     return Result.success(docPath);
   }
 
-  static Future<Result<String?>> getCursor(int page) async {
+  Future<Result<String?>> getCursor(int page) async {
     if (page == 0) {
       return Result.success('');
     } else {
@@ -169,7 +172,7 @@ class NoticeRepository {
         prevCursor = result.data;
       }
 
-      final cursor = await IoeExam.getCursor(prevCursor!);
+      final cursor = await client.getCursor(prevCursor!);
 
       if (cursor == null) {
         return Result.failure('There are no notices in this page');

@@ -7,7 +7,7 @@ import 'package:notice_stalk/core/notification.dart';
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     if (task == 'check_for_updates') {
-      final newNotices = await NoticeRepository.fetchNotices();
+      final newNotices = await NoticeRepository.instance.fetchNotices();
 
       if (!newNotices.isSuccess) {
         NotificationManager.show(
@@ -18,7 +18,7 @@ void callbackDispatcher() {
         return Future.value(false);
       } else if (newNotices.data!.isEmpty) {
         logger.d('No new notices');
-       
+
         return Future.value(true);
       }
       final notices = newNotices.data!;

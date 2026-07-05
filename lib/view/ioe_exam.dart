@@ -31,7 +31,7 @@ class _IoeExamState extends State<IoeExam> {
   Future<void> _getNotices() async {
     setState(() => isLoading = true);
 
-    final result = await NoticeRepository.getNotices(
+    final result = await NoticeRepository.instance.getNotices(
       page: page,
       searchText: searchTerm,
     );
@@ -49,8 +49,8 @@ class _IoeExamState extends State<IoeExam> {
 
   Future<void> _refetch() async {
     setState(() => isLoading = true);
-    await NoticeRepository.fetchNotices(page: page);
-    final result = await NoticeRepository.getNotices(page: page);
+    await NoticeRepository.instance.fetchNotices(page: page);
+    final result = await NoticeRepository.instance.getNotices(page: page);
 
     if (!result.isSuccess) {
       logger.e(result.error);
