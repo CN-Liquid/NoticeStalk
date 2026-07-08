@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:logger/logger.dart';
 import 'package:notice_stalk/core/notice.dart';
 import 'package:notice_stalk/repository/network/network.dart';
@@ -180,5 +181,37 @@ class NoticeRepository {
 
       return Result.success(cursor);
     }
+  }
+
+  Future<Result<void>> deleteFiles(Directory directory) async {
+    final noticesResult = await NoticeDatabase.fetchAllNotices();
+
+    if (!noticesResult.isSuccess) {
+      return Result.failure(noticesResult.error!);
+    }
+
+    for (final notice in noticesResult.data!) {
+      final noticeObj = Notice(
+        details: notice['details'],
+        date: notice['date'],
+        link: notice['link'],
+        docLink: notice['docLink'],
+        docPath: null,
+      );
+
+      final insertResult = await NoticeDatabase.insert(noticeObj);
+
+      if (!insertResult.isSuccess) {
+        return Result.failure('Error in Purging document reference');
+      }
+    }
+
+    final deleteResult = await FileStorage.deleteDirectoryContents(directory);
+
+    if (!deleteResult.isSuccess) {
+      return Result.failure(deleteResult.error!);
+    }
+
+    return Result.success(null);
   }
 }

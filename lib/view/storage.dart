@@ -64,7 +64,7 @@ class _StoragePageState extends State<StoragePage> {
     setState(() {
       isClearPressed = true;
     });
-    final result = await FileStorage.deleteDirectoryContents(
+    final result = await NoticeRepository.instance.deleteFiles(
       downloadsDirectory!,
     );
     setState(() {
