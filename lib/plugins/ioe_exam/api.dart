@@ -89,7 +89,8 @@ class IoeExam {
           .querySelectorAll('a')
           .firstWhere(
             (element) =>
-                element.text.trim() == 'Click here to view the full notice.',
+                (element.text.trim() == 'Click here to view the full notice.') |
+                (element.text.trim() == 'Click here to view the result.'),
           );
       return link.attributes['href'];
     } on StateError {
