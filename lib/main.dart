@@ -5,6 +5,7 @@ import 'package:notice_stalk/view/ioe_exam.dart';
 import 'package:notice_stalk/core/notification.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:notice_stalk/view/plugins.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,6 +39,6 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'Flutter Demo', home: IoeExam());
+    return MaterialApp(title: 'Flutter Demo', home: PluginsPage());
   }
 }
