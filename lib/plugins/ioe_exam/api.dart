@@ -54,7 +54,10 @@ class IoeExam {
       );
 
       if (link == null) {
-        Logger().e('failed to retrieve document link');
+        Logger().e(
+          'failed to retrieve document link ${d.querySelector('a')!.attributes['href']!.trim()}',
+        );
+
         return false;
       }
 
@@ -84,18 +87,13 @@ class IoeExam {
   Future<String?> getDocumentLink(String noticeLink) async {
     final response = await dioClient.get(noticeLink);
     final document = parse(response.data);
-    try {
-      final link = document
-          .querySelectorAll('a')
-          .firstWhere(
-            (element) =>
-                (element.text.trim() == 'Click here to view the full notice.') |
-                (element.text.trim() == 'Click here to view the result.'),
-          );
-      return link.attributes['href'];
-    } on StateError {
-      final img = document.querySelector('.ck-table img');
-      return img!.attributes['src'];
+    final parentDiv = document.querySelector('[class="ck-table"]');
+    if (parentDiv!.querySelector('a') != null) {
+      final link = parentDiv.querySelector('a');
+      return link!.attributes['href'];
+    } else {
+      final link = parentDiv.querySelector('img');
+      return link!.attributes['src'];
     }
   }
 
