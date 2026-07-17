@@ -35,6 +35,7 @@ class NoticeDatabase {
 
   static Future _createDB(Database db, int version) async {
     await db.execute("""CREATE TABLE Notices (
+    id TEXT,
     date TEXT,
     details TEXT,
     link TEXT,
@@ -44,7 +45,7 @@ class NoticeDatabase {
     )""");
 
     await db.execute(
-      """ CREATE TABLE Pages (page INT , cursor STRING NULL) """,
+      """ CREATE TABLE Pages (id TEXT,page INT , cursor TEXT NULL) """,
     );
   }
 
@@ -63,7 +64,7 @@ class NoticeDatabase {
     }
   }
 
-  static Future<Result<bool>> insert(Notice notice) async {
+  static Future<Result<bool>> insert(String id, Notice notice) async {
     final result = await database;
     bool isInserted = false;
 
@@ -72,6 +73,7 @@ class NoticeDatabase {
     }
 
     final noticeResult = await fetchNotice(
+      id: id,
       date: notice.date,
       details: notice.details,
     );
@@ -86,8 +88,9 @@ class NoticeDatabase {
     try {
       final db = result.data!;
       await db.rawInsert(
-        'INSERT OR REPLACE INTO Notices(date,details,link,docLink,docPath) VALUES(?,?,?,?,?)',
+        'INSERT OR REPLACE INTO Notices(id,date,details,link,docLink,docPath) VALUES(?,?,?,?,?,?)',
         [
+          notice.id,
           notice.date,
           notice.details,
           notice.link,
@@ -118,6 +121,7 @@ class NoticeDatabase {
   }
 
   static Future<Result<List<Map<String, dynamic>>>> fetchNotices({
+    required String id,
     int page = 0,
     String searchText = '',
   }) async {
@@ -137,8 +141,8 @@ class NoticeDatabase {
           limit: 6,
           offset: 6 * page,
           orderBy: 'date DESC',
-          where: 'details LIKE ?',
-          whereArgs: [formattedText],
+          where: 'details LIKE ? AND id=?',
+          whereArgs: [formattedText, id],
         );
       } else {
         data = await result.data!.query(
@@ -146,6 +150,8 @@ class NoticeDatabase {
           limit: 6,
           offset: 6 * page,
           orderBy: 'date DESC',
+          where: 'id=? ',
+          whereArgs: [id],
         );
       }
 
@@ -156,6 +162,7 @@ class NoticeDatabase {
   }
 
   static Future<Result<Notice>> fetchNotice({
+    required String id,
     required String date,
     required String details,
   }) async {
@@ -168,8 +175,8 @@ class NoticeDatabase {
     try {
       final data = await result.data!.query(
         'Notices',
-        where: 'date = ? AND details = ?',
-        whereArgs: [date, details],
+        where: 'date = ? AND details = ? AND id=?',
+        whereArgs: [date, details, id],
       );
 
       if (data.isEmpty) {
@@ -179,6 +186,7 @@ class NoticeDatabase {
       final row = data.first;
       return Result.success(
         Notice(
+          id: row['id'] as String,
           date: row['date'] as String,
           details: row['details'] as String,
           link: row['link'] as String,
@@ -191,7 +199,11 @@ class NoticeDatabase {
     }
   }
 
-  static Future<Result<void>> insertCursor(int page, String cursor) async {
+  static Future<Result<void>> insertCursor(
+    String id,
+    int page,
+    String cursor,
+  ) async {
     final result = await database;
 
     if (!result.isSuccess) {
@@ -201,7 +213,7 @@ class NoticeDatabase {
     try {
       final db = result.data;
 
-      await db!.insert('Pages', {'page': page, 'cursor': cursor});
+      await db!.insert('Pages', {'id': id, 'page': page, 'cursor': cursor});
 
       return Result.success(null);
     } catch (e) {
@@ -209,7 +221,7 @@ class NoticeDatabase {
     }
   }
 
-  static Future<Result<String?>> getCursor(int page) async {
+  static Future<Result<String?>> getCursor(String id, int page) async {
     if (page == 0) {
       return Result.success('');
     }
@@ -224,13 +236,13 @@ class NoticeDatabase {
       final db = result.data;
       final cursor = await db!.query(
         'Pages',
-        where: 'page = ?',
-        whereArgs: [page],
+        where: 'page = ? AND id=?',
+        whereArgs: [page, id],
       );
 
       return Result.success(cursor.first['cursor'].toString());
     } catch (e) {
-      return Result.failure('Error in inserting cursor : $e');
+      return Result.failure('Error in reading cursor : $e');
     }
   }
 }
