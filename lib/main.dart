@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:notice_stalk/core/background_task_handler.dart';
-import 'package:notice_stalk/view/ioe_exam.dart';
 import 'package:notice_stalk/core/notification.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:permission_handler/permission_handler.dart';
