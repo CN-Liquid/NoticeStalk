@@ -2,16 +2,19 @@ import 'package:html/dom.dart' as dom;
 import 'package:dio/dio.dart';
 import 'package:html/parser.dart';
 import 'package:logger/logger.dart';
+import 'package:notice_stalk/core/api.dart';
+import 'package:notice_stalk/core/result.dart';
 
-class IoeExam {
-  IoeExam._private();
+class IoeExam extends Api {
+  IoeExam._private()
+    : super(url: 'https://exam.ioe.tu.edu.np/notices', id: 'ioe_exam');
 
   static final IoeExam instance = IoeExam._private();
   List<Map<String, dynamic>> notices = [];
   final dioClient = Dio();
-  final url = 'https://exam.ioe.tu.edu.np/notices';
 
-  Future<bool> retrieve({int page = 0}) async {
+  @override
+  Future<Result<void>> retrieve({int page = 0}) async {
     dom.Document? document;
     String cursor = '';
 
@@ -32,12 +35,13 @@ class IoeExam {
     final data = document!.querySelectorAll('.recent-post-wrapper.shdow');
     if (data.isNotEmpty) {
       notices = convertToList(data);
-      return true;
+      return Result.success(null);
     }
-    return false;
+    return Result.failure('Unable to retrieve data');
   }
 
-  Future<bool> retrieveByCursor(String prevCursor) async {
+  @override
+  Future<Result<void>> retrieveByCursor(String prevCursor) async {
     dom.Document? document;
 
     final modifiedUrl = '$url?cursor=$prevCursor';
@@ -58,7 +62,9 @@ class IoeExam {
           'failed to retrieve document link ${d.querySelector('a')!.attributes['href']!.trim()}',
         );
 
-        return false;
+        return Result.failure(
+          'failed to retrieve document link ${d.querySelector('a')!.attributes['href']!.trim()}',
+        );
       }
 
       final element = dom.Element.tag('p')..text = link;
@@ -68,14 +74,15 @@ class IoeExam {
 
     if (data.isNotEmpty) {
       notices = convertToList(data);
-      return true;
+      return Result.success(null);
     }
-    return false;
+    return Result.failure('Unable To retrieve by cursor');
   }
 
   List<Map<String, dynamic>> convertToList(List<dom.Element> data) {
     return data.map((d) {
       return {
+        'id': 'ioe_exam',
         'date': d.querySelector('.date')!.text.trim(),
         'details': d.querySelector('.detail')!.text.trim(),
         'link': d.querySelector('a')!.attributes['href']!.trim(),
@@ -97,7 +104,8 @@ class IoeExam {
     }
   }
 
-  Future<String?> getCursor(String prevCursor) async {
+  @override
+  Future<Result<String?>> getCursor(String prevCursor) async {
     dom.Document? document;
     String? cursor;
 
@@ -109,13 +117,13 @@ class IoeExam {
 
     final nextLink = document.querySelector('a.page-link[rel="next"]');
     if (nextLink == null) {
-      return null;
+      return Result.failure('Unable to retrieve cursor');
     }
 
     final href = Uri.parse(nextLink.attributes['href']!);
 
     cursor = href.queryParameters['cursor']!;
 
-    return cursor;
+    return Result.success(cursor);
   }
 }
