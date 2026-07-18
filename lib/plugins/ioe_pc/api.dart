@@ -2,16 +2,21 @@ import 'package:html/dom.dart' as dom;
 import 'package:dio/dio.dart';
 import 'package:html/parser.dart';
 import 'package:logger/logger.dart';
+import 'package:notice_stalk/core/api.dart';
+import 'package:notice_stalk/core/result.dart';
 
-class IoePc {
-  IoePc._private();
+class IoePc extends Api {
+  IoePc._private()
+    : super(
+        url: 'https://www.ioepc.edu.np/info/category/notice/page',
+        id: 'ioe_pc',
+      );
 
   static final IoePc instance = IoePc._private();
-  List<Map<String, dynamic>> notices = [];
   final client = Dio();
-  final url = 'https://www.ioepc.edu.np/info/category/notice/page';
 
-  Future<bool> retrieve({int page = 0}) async {
+  @override
+  Future<Result<void>> retrieve({int page = 0}) async {
     dom.Document? document;
 
     final modifiedUrl = '$url/${page + 1}';
@@ -28,7 +33,9 @@ class IoePc {
       );
 
       if (docLink == null) {
-        Logger().e('failed to retrieve document link');
+        Logger().e(
+          'failed to retrieve document link : ${d.querySelector('a')!.attributes['href']!.trim()}',
+        );
       }
 
       final element = dom.Element.tag('p')..text = docLink;
@@ -37,9 +44,9 @@ class IoePc {
     }
     if (data.isNotEmpty) {
       notices = convertToList(data);
-      return true;
+      return Result.success(null);
     }
-    return false;
+    return Result.failure('Unable to retrieve notice');
   }
 
   List<Map<String, dynamic>> convertToList(List<dom.Element> data) {
