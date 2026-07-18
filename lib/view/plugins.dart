@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:notice_stalk/view/ioe_pc.dart';
 import 'package:notice_stalk/view/ioe_exam.dart';
 
 class PluginsPage extends StatelessWidget {
@@ -26,7 +27,19 @@ class PluginsPage extends StatelessWidget {
                 },
                 title: Text('IOE Exam'),
               ),
-              ListTile(onTap: () {}, title: Text('IOE Pc')),
+              ListTile(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return IoePc();
+                      },
+                    ),
+                  );
+                },
+                title: Text('IOE Pc'),
+              ),
             ],
           ),
         ),
