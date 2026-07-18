@@ -3,18 +3,15 @@ import 'package:notice_stalk/core/result.dart';
 class Api {
   final String url;
   final String id;
+  List<Map<String, dynamic>> notices = [];
 
-  const Api({required this.url, required this.id});
+  Api({required this.url, required this.id});
 
-  Future<Result<void>> retrieve() async {
+  Future<Result<void>> retrieve({int page = 0}) async {
     return Result.failure('Not Implemented');
   }
 
-  Future<Result<void>> retrieveByCursor() async {
-    return Result.failure('Not Implemented');
-  }
-
-  Future<Result<String?>> getDocumentLink(String noticeLink) async {
+  Future<Result<void>> retrieveByCursor(String prevCursor) async {
     return Result.failure('Not Implemented');
   }
 
