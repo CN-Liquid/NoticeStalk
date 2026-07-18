@@ -24,7 +24,7 @@ class _IoeExamState extends State<IoeExam> {
   @override
   void initState() {
     super.initState();
-
+    NoticeRepository.instance.setClient('ioe_pc');
     _refetch();
   }
 
@@ -49,7 +49,7 @@ class _IoeExamState extends State<IoeExam> {
 
   Future<void> _refetch() async {
     setState(() => isLoading = true);
-    await NoticeRepository.instance.fetchNotices(page: page);
+    await NoticeRepository.instance.fetchNoticesByCursor(page: page);
     final result = await NoticeRepository.instance.getNotices(page: page);
 
     if (!result.isSuccess) {
