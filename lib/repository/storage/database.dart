@@ -64,7 +64,7 @@ class NoticeDatabase {
     }
   }
 
-  static Future<Result<bool>> insert(String id, Notice notice) async {
+  static Future<Result<bool>> insert(Notice notice) async {
     final result = await database;
     bool isInserted = false;
 
@@ -73,7 +73,7 @@ class NoticeDatabase {
     }
 
     final noticeResult = await fetchNotice(
-      id: id,
+      id: notice.id,
       date: notice.date,
       details: notice.details,
     );
