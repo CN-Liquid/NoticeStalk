@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:logger/logger.dart';
+import 'package:notice_stalk/core/api.dart';
 import 'package:notice_stalk/core/notice.dart';
+import 'package:notice_stalk/plugins/ioe_pc/api.dart';
 import 'package:notice_stalk/repository/network/network.dart';
 import 'package:notice_stalk/repository/storage/database.dart';
 import 'package:notice_stalk/plugins/ioe_exam/api.dart';
@@ -13,13 +15,26 @@ class NoticeRepository {
   NoticeRepository._private();
   static final NoticeRepository instance = NoticeRepository._private();
 
-  final client = IoeExam.instance;
+  Api client = IoeExam.instance;
+
+  Result<String> setClient(String clientId) {
+    if ('ioe_exam' == clientId) {
+      client = IoeExam.instance;
+      return Result.success(client.id);
+    }
+    if ('ioe_pc' == clientId) {
+      client = IoePc.instance;
+      return Result.success(client.id);
+    }
+    return Result.failure('Invalid Client id');
+  }
 
   Future<Result<List<Map<String, dynamic>>>> getNotices({
     int page = 0,
     String searchText = '',
   }) async {
     final result = await NoticeDatabase.fetchNotices(
+      id: client.id,
       page: page,
       searchText: searchText,
     );
@@ -29,13 +44,18 @@ class NoticeRepository {
     }
 
     if (result.data!.isEmpty && searchText.isEmpty) {
-      final result = await fetchNotices(page: page);
+      final result = (client.id == 'ioe_exam')
+          ? await fetchNoticesByCursor(page: page)
+          : await fetchNotices(page: page);
 
       if (!result.isSuccess) {
         return Result.failure(result.error!);
       }
 
-      final newData = await NoticeDatabase.fetchNotices(page: page);
+      final newData = await NoticeDatabase.fetchNotices(
+        id: client.id,
+        page: page,
+      );
 
       if (!newData.isSuccess) {
         return Result.failure(newData.error!);
@@ -53,6 +73,45 @@ class NoticeRepository {
   Future<Result<List<Map<String, dynamic>>>> fetchNotices({
     int page = 0,
   }) async {
+    List<Map<String, dynamic>> insertedNotices = [];
+    logger.d('Fetching');
+    final fetchResult = await client.retrieve(page: page);
+
+    if (!fetchResult.isSuccess) {
+      return Result.failure(fetchResult.error!);
+    }
+
+    final notices = client.notices;
+
+    if (notices.isEmpty) {
+      return Result.failure('There are no notices in this page');
+    }
+
+    for (final data in notices) {
+      final notice = Notice(
+        id: client.id,
+        date: data['date'],
+        details: data['details'],
+        link: data['link'],
+        docLink: data['docLink'],
+      );
+      final result = await NoticeDatabase.insert(notice);
+
+      if (!result.isSuccess) {
+        return Result.failure(result.error!);
+      }
+
+      if (result.data == true) {
+        insertedNotices.add(data);
+      }
+    }
+
+    return Result.success(insertedNotices);
+  }
+
+  Future<Result<List<Map<String, dynamic>>>> fetchNoticesByCursor({
+    int page = 0,
+  }) async {
     final cursor = await getCursor(page);
 
     List<Map<String, dynamic>> insertedNotices = [];
@@ -63,7 +122,8 @@ class NoticeRepository {
 
     logger.d('Fetching');
 
-    bool isFetched = await client.retrieveByCursor(cursor.data!);
+    final fetchResult = await client.retrieveByCursor(cursor.data!);
+    bool isFetched = fetchResult.isSuccess;
     if (isFetched) {
       final notices = client.notices;
 
@@ -73,6 +133,7 @@ class NoticeRepository {
 
       for (final data in notices) {
         final notice = Notice(
+          id: data['id'],
           date: data['date'],
           details: data['details'],
           link: data['link'],
@@ -90,6 +151,7 @@ class NoticeRepository {
       }
 
       final cursorResult = await NoticeDatabase.insertCursor(
+        client.id,
         page,
         cursor.data!,
       );
@@ -109,6 +171,7 @@ class NoticeRepository {
     required String details,
   }) async {
     final result = await NoticeDatabase.fetchNotice(
+      id: client.id,
       date: date,
       details: details,
     );
@@ -160,7 +223,7 @@ class NoticeRepository {
     if (page == 0) {
       return Result.success('');
     } else {
-      final cursorResult = await NoticeDatabase.getCursor(page - 1);
+      final cursorResult = await NoticeDatabase.getCursor(client.id, page - 1);
 
       if (!cursorResult.isSuccess) {
         return Result.failure(cursorResult.error!);
@@ -173,11 +236,11 @@ class NoticeRepository {
         prevCursor = result.data;
       }
 
-      final cursor = await client.getCursor(prevCursor!);
-
-      if (cursor == null) {
+      final cursorRes = await client.getCursor(prevCursor!);
+      if (!cursorRes.isSuccess) {
         return Result.failure('There are no notices in this page');
       }
+      final cursor = cursorRes.data!;
 
       return Result.success(cursor);
     }
@@ -192,6 +255,7 @@ class NoticeRepository {
 
     for (final notice in noticesResult.data!) {
       final noticeObj = Notice(
+        id: notice['id'],
         details: notice['details'],
         date: notice['date'],
         link: notice['link'],
