@@ -22,6 +22,7 @@ class NoticePage extends StatefulWidget {
 
 class _NoticePageState extends State<NoticePage> {
   String? pdfDocument;
+  bool isError = false;
 
   @override
   void initState() {
@@ -34,9 +35,13 @@ class _NoticePageState extends State<NoticePage> {
       date: widget.date,
       details: widget.details,
     );
-
     if (!result.isSuccess) {
       logger.e(result.error);
+      setState(() {
+        isError = true;
+      });
+
+      return;
     }
 
     setState(() {
@@ -74,7 +79,9 @@ class _NoticePageState extends State<NoticePage> {
               onPressed: () => _launchUrl(Uri.parse(widget.link)),
               child: Text(widget.link),
             ),
-            pdfDocument == null
+            isError == true
+                ? Text('Unable To load document')
+                : pdfDocument == null
                 ? CircularProgressIndicator()
                 : Expanded(
                     child: _isImage(pdfDocument!)
