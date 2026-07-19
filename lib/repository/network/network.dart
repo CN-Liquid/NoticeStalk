@@ -25,9 +25,19 @@ class NetworkService {
       return Result.success((bytes, format));
     }
 
+    String modifiedUrl = fileUrl;
+
+    if (fileUrl.contains('drive.google')) {
+      final regex = RegExp(r'(?<=/d/)[a-zA-Z0-9_-]+');
+      final match = regex.firstMatch(fileUrl);
+
+      modifiedUrl =
+          'https://drive.google.com/uc?export=download&id=${match!.group(0)}';
+    }
+
     try {
       final response = await _client.get(
-        fileUrl,
+        modifiedUrl,
         options: Options(responseType: ResponseType.bytes),
       );
 
@@ -35,7 +45,12 @@ class NetworkService {
         response.headers.value('content-type')!,
       );
 
+      if (contentType.mimeType == 'text/html') {
+        return Result.failure('Unable to download file : Bad download link');
+      }
+
       final bytes = response.data as List<int>;
+
       return Result.success((bytes, contentType.subtype));
     } on DioException catch (e) {
       if (e.type == DioExceptionType.connectionTimeout ||
