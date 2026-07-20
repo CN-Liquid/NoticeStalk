@@ -96,7 +96,7 @@ class _IoePcState extends State<IoePc> {
           ],
         ),
       ),
-      appBar: AppBar(title: Text('IOE Exam'), centerTitle: true),
+      appBar: AppBar(title: Text('IOE Pc'), centerTitle: true),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : Column(

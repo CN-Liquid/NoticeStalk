@@ -10,7 +10,6 @@ class IoeExam extends Api {
     : super(url: 'https://exam.ioe.tu.edu.np/notices', id: 'ioe_exam');
 
   static final IoeExam instance = IoeExam._private();
-  List<Map<String, dynamic>> notices = [];
   final dioClient = Dio();
 
   @override

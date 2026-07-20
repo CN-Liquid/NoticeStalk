@@ -4,8 +4,6 @@ import 'package:logger/logger.dart';
 import 'package:notice_stalk/repository/repository.dart';
 import 'package:notice_stalk/repository/storage/file_storage.dart';
 
-// TODO : Wire up the clear button function
-
 class StoragePage extends StatefulWidget {
   const StoragePage({super.key});
 
