@@ -24,7 +24,7 @@ class _IoeExamState extends State<IoeExam> {
   @override
   void initState() {
     super.initState();
-    NoticeRepository.instance.setClient('ioe_pc');
+    NoticeRepository.instance.setClient('ioe_exam');
     _refetch();
   }
 
