@@ -32,6 +32,27 @@ class IoeExam extends Api {
     }
 
     final data = document!.querySelectorAll('.recent-post-wrapper.shdow');
+
+    for (final d in data) {
+      final link = await getDocumentLink(
+        d.querySelector('a')!.attributes['href']!.trim(),
+      );
+
+      if (link == null) {
+        Logger().e(
+          'failed to retrieve document link ${d.querySelector('a')!.attributes['href']!.trim()}',
+        );
+
+        return Result.failure(
+          'failed to retrieve document link ${d.querySelector('a')!.attributes['href']!.trim()}',
+        );
+      }
+
+      final element = dom.Element.tag('p')..text = link;
+
+      d.append(element);
+    }
+
     if (data.isNotEmpty) {
       notices = convertToList(data);
       return Result.success(null);
@@ -80,6 +101,7 @@ class IoeExam extends Api {
 
   List<Map<String, dynamic>> convertToList(List<dom.Element> data) {
     return data.map((d) {
+      print(d.outerHtml);
       return {
         'id': 'ioe_exam',
         'date': d.querySelector('.date')!.text.trim(),
