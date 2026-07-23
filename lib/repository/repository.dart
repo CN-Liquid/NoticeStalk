@@ -18,15 +18,16 @@ class NoticeRepository {
   Api client = IoeExam.instance;
 
   Result<String> setClient(String clientId) {
-    if ('ioe_exam' == clientId) {
-      client = IoeExam.instance;
-      return Result.success(client.id);
+    switch (clientId) {
+      case 'ioe_exam':
+        client = IoeExam.instance;
+        return Result.success(client.id);
+      case 'ioe_pc':
+        client = IoePc.instance;
+        return Result.success(client.id);
+      default:
+        return Result.failure('Invalid client id');
     }
-    if ('ioe_pc' == clientId) {
-      client = IoePc.instance;
-      return Result.success(client.id);
-    }
-    return Result.failure('Invalid Client id');
   }
 
   Future<Result<List<Map<String, dynamic>>>> getNotices({
