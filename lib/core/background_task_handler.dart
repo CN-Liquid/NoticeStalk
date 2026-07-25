@@ -22,8 +22,6 @@ void callbackDispatcher() {
           return Future.value(false);
         } else if (newNotices.data!.isEmpty) {
           logger.d('No new notices');
-          await NotificationManager.initialize();
-          NotificationManager.show(title: 'Notices', details: 'No new notices');
           return Future.value(true);
         }
         final notices = newNotices.data!;
