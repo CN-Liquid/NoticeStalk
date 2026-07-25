@@ -30,6 +30,19 @@ class NoticeRepository {
     }
   }
 
+  Future<Result<Notice>> getNotice(String details, String date) async {
+    final result = await NoticeDatabase.fetchNotice(
+      id: client.id,
+      date: date,
+      details: details,
+    );
+    if (!result.isSuccess) {
+      return result;
+    }
+
+    return result;
+  }
+
   Future<Result<List<Map<String, dynamic>>>> getNotices({
     int page = 0,
     String searchText = '',
