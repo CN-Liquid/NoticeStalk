@@ -9,27 +9,28 @@ final clients = ['ioe_exam', 'ioe_pc'];
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     if (task == 'check_for_updates') {
+      await NotificationManager.initialize();
       for (final client in clients) {
         NoticeRepository.instance.setClient(client);
         final newNotices = await NoticeRepository.instance.fetchNotices();
 
         if (!newNotices.isSuccess) {
-          NotificationManager.show(
+          await NotificationManager.show(
             title: 'Failed to fetch notices',
             details: newNotices.error!,
           );
           Logger().e(newNotices.error);
-          return Future.value(false);
+          continue;
         } else if (newNotices.data!.isEmpty) {
-          logger.d('No new notices');
-          return Future.value(true);
+          Logger().d('No new notices');
+          continue;
         }
         final notices = newNotices.data!;
-        await NotificationManager.initialize();
+
         for (final data in notices) {
-          NotificationManager.show(
-            title: data['details'],
-            details: data['date'],
+          await NotificationManager.show(
+            title: data.details,
+            details: data.date,
           );
         }
       }
