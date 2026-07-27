@@ -1,9 +1,10 @@
 import 'package:notice_stalk/core/result.dart';
+import 'package:notice_stalk/core/notice.dart';
 
 class Api {
   final String url;
   final String id;
-  List<Map<String, dynamic>> notices = [];
+  List<Notice> notices = [];
 
   Api({required this.url, required this.id});
 

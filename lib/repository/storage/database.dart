@@ -120,7 +120,7 @@ class NoticeDatabase {
     }
   }
 
-  static Future<Result<List<Map<String, dynamic>>>> fetchNotices({
+  static Future<Result<List<Notice>>> fetchNotices({
     required String id,
     int page = 0,
     String searchText = '',
@@ -155,7 +155,20 @@ class NoticeDatabase {
         );
       }
 
-      return Result.success(data);
+      return Result.success(
+        data
+            .map(
+              (d) => Notice(
+                id: d['id'] as String,
+                details: d['details'] as String,
+                date: d['date'] as String,
+                link: d['link'] as String,
+                docLink: d['docLink'] as String,
+                docPath: d['docPath'] as String?,
+              ),
+            )
+            .toList(),
+      );
     } catch (e) {
       return Result.failure('Unable to query the database : $e');
     }

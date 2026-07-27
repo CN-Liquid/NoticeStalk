@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:notice_stalk/core/notice.dart';
 import 'package:notice_stalk/repository/repository.dart';
 import 'package:notice_stalk/view/notice_page.dart';
 import 'package:logger/logger.dart';
@@ -15,7 +16,7 @@ class IoeExam extends StatefulWidget {
 }
 
 class _IoeExamState extends State<IoeExam> {
-  List<Map<String, dynamic>>? notices;
+  List<Notice>? notices;
   bool isLoading = true;
   bool empty = false;
   int page = 0;
@@ -130,16 +131,16 @@ class _IoeExamState extends State<IoeExam> {
                                   MaterialPageRoute(
                                     builder: (BuildContext context) {
                                       return NoticePage(
-                                        details: notice['details'],
-                                        date: notice['date'],
-                                        link: notice['link'],
+                                        details: notice.details,
+                                        date: notice.date,
+                                        link: notice.link,
                                       );
                                     },
                                   ),
                                 );
                               },
-                              title: Text(notice['details']),
-                              subtitle: Text(notice['date']),
+                              title: Text(notice.details),
+                              subtitle: Text(notice.date),
                             );
                           },
                         ),

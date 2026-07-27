@@ -43,7 +43,7 @@ class NoticeRepository {
     return result;
   }
 
-  Future<Result<List<Map<String, dynamic>>>> getNotices({
+  Future<Result<List<Notice>>> getNotices({
     int page = 0,
     String searchText = '',
   }) async {
@@ -84,10 +84,8 @@ class NoticeRepository {
     return result;
   }
 
-  Future<Result<List<Map<String, dynamic>>>> fetchNotices({
-    int page = 0,
-  }) async {
-    List<Map<String, dynamic>> insertedNotices = [];
+  Future<Result<List<Notice>>> fetchNotices({int page = 0}) async {
+    List<Notice> insertedNotices = [];
     logger.d('Fetching');
     final fetchResult = await client.retrieve(page: page);
 
@@ -104,10 +102,10 @@ class NoticeRepository {
     for (final data in notices) {
       final notice = Notice(
         id: client.id,
-        date: data['date'],
-        details: data['details'],
-        link: data['link'],
-        docLink: data['docLink'],
+        date: data.date,
+        details: data.details,
+        link: data.link,
+        docLink: data.docLink,
       );
       final result = await NoticeDatabase.insert(notice);
 
@@ -123,12 +121,10 @@ class NoticeRepository {
     return Result.success(insertedNotices);
   }
 
-  Future<Result<List<Map<String, dynamic>>>> fetchNoticesByCursor({
-    int page = 0,
-  }) async {
+  Future<Result<List<Notice>>> fetchNoticesByCursor({int page = 0}) async {
     final cursor = await getCursor(page);
 
-    List<Map<String, dynamic>> insertedNotices = [];
+    List<Notice> insertedNotices = [];
 
     if (!cursor.isSuccess) {
       return Result.failure(cursor.error!);
@@ -147,11 +143,11 @@ class NoticeRepository {
 
       for (final data in notices) {
         final notice = Notice(
-          id: data['id'],
-          date: data['date'],
-          details: data['details'],
-          link: data['link'],
-          docLink: data['docLink'],
+          id: client.id,
+          date: data.date,
+          details: data.details,
+          link: data.link,
+          docLink: data.docLink,
         );
         final result = await NoticeDatabase.insert(notice);
 

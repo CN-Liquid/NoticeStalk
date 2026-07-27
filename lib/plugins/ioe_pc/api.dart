@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:html/parser.dart';
 import 'package:logger/logger.dart';
 import 'package:notice_stalk/core/api.dart';
+import 'package:notice_stalk/core/notice.dart';
 import 'package:notice_stalk/core/result.dart';
 
 class IoePc extends Api {
@@ -49,14 +50,15 @@ class IoePc extends Api {
     return Result.failure('Unable to retrieve notice');
   }
 
-  List<Map<String, dynamic>> convertToList(List<dom.Element> data) {
+  List<Notice> convertToList(List<dom.Element> data) {
     return data.map((d) {
-      return {
-        'date': d.querySelector('h7.text-muted')!.text.trim(),
-        'details': d.querySelector('h6.card-title')!.text.trim(),
-        'link': d.querySelector('a')!.attributes['href']!.trim(),
-        'docLink': d.querySelector('p')!.text.trim(),
-      };
+      return Notice(
+        id: id,
+        details: d.querySelector('.detail')!.text.trim(),
+        date: d.querySelector('.date')!.text.trim(),
+        link: d.querySelector('a')!.attributes['href']!.trim(),
+        docLink: d.querySelector('p')!.text.trim(),
+      );
     }).toList();
   }
 
