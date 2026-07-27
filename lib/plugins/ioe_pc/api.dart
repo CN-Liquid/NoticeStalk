@@ -54,8 +54,8 @@ class IoePc extends Api {
     return data.map((d) {
       return Notice(
         id: id,
-        details: d.querySelector('.detail')!.text.trim(),
-        date: d.querySelector('.date')!.text.trim(),
+        details: d.querySelector('a')!.text.trim(),
+        date: d.querySelector('h7')!.text.trim(),
         link: d.querySelector('a')!.attributes['href']!.trim(),
         docLink: d.querySelector('p')!.text.trim(),
       );
