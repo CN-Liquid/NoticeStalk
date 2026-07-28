@@ -15,11 +15,11 @@ class PluginsPage extends StatefulWidget {
 class _PluginsPageState extends State<PluginsPage> {
   int index = 0;
   final plugins = [IoeExam(), IoePc()];
-
+  final title = ['IOE Exam', 'IOE Pc'];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Notices')),
+      appBar: AppBar(title: Text(title[index]), centerTitle: true),
       drawer: Drawer(
         child: Column(
           children: [
