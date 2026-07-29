@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:notice_stalk/repository/repository.dart';
 import 'package:notice_stalk/view/ioe_pc.dart';
 import 'package:notice_stalk/view/ioe_exam.dart';
 import 'package:notice_stalk/view/permissions.dart';
@@ -51,20 +50,26 @@ class _PluginsPageState extends State<PluginsPage> {
             ),
             ListTile(
               title: Text('IOE Exam'),
+              selected: index == 0,
+              selectedColor: Colors.blue,
               onTap: () {
-                NoticeRepository.instance.setClient('ioe_exam');
-
                 setState(() {
                   index = 0;
                 });
+
+                Navigator.of(context).pop();
               },
             ),
             ListTile(
               title: Text('IOE Pc'),
+              selected: index == 1,
+              selectedColor: Colors.blue,
               onTap: () {
                 setState(() {
                   index = 1;
                 });
+
+                Navigator.of(context).pop();
               },
             ),
           ],
