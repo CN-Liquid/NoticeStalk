@@ -253,6 +253,10 @@ class NoticeDatabase {
         whereArgs: [page, id],
       );
 
+      if (cursor.isEmpty) {
+        return Result.success(null);
+      }
+
       return Result.success(cursor.first['cursor'].toString());
     } catch (e) {
       return Result.failure('Error in reading cursor : $e');
