@@ -20,9 +20,12 @@ class _PluginsPageState extends State<PluginsPage> {
     return Scaffold(
       appBar: AppBar(title: Text(title[index]), centerTitle: true),
       drawer: Drawer(
+        shape: RoundedRectangleBorder(side: BorderSide.none),
+        width: 200,
         child: Column(
           children: [
             ListTile(
+              leading: Icon(Icons.security),
               title: Text('Permissions'),
               onTap: () {
                 Navigator.push(
@@ -36,6 +39,7 @@ class _PluginsPageState extends State<PluginsPage> {
               },
             ),
             ListTile(
+              leading: Icon(Icons.storage),
               title: Text('Storage'),
               onTap: () {
                 Navigator.push(
@@ -49,6 +53,7 @@ class _PluginsPageState extends State<PluginsPage> {
               },
             ),
             ListTile(
+              leading: Icon(Icons.power),
               title: Text('IOE Exam'),
               selected: index == 0,
               selectedColor: Colors.blue,
@@ -61,6 +66,7 @@ class _PluginsPageState extends State<PluginsPage> {
               },
             ),
             ListTile(
+              leading: Icon(Icons.power),
               title: Text('IOE Pc'),
               selected: index == 1,
               selectedColor: Colors.blue,
