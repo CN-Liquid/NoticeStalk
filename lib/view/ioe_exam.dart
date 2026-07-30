@@ -68,11 +68,14 @@ class _IoeExamState extends State<IoeExam> {
         ? Center(child: CircularProgressIndicator())
         : Column(
             children: [
-              TextFormField(
-                initialValue: searchTerm,
-                onChanged: (value) {
-                  searchTerm = value;
-                },
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: TextFormField(
+                  initialValue: searchTerm,
+                  onChanged: (value) {
+                    searchTerm = value;
+                  },
+                ),
               ),
               TextButton(
                 onPressed: () {
@@ -91,6 +94,9 @@ class _IoeExamState extends State<IoeExam> {
                         itemBuilder: (context, index) {
                           final notice = notices![index];
                           return ListTile(
+                            tileColor: (index % 2 == 1)
+                                ? Colors.grey.shade300
+                                : null,
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -105,8 +111,15 @@ class _IoeExamState extends State<IoeExam> {
                                 ),
                               );
                             },
-                            title: Text(notice.details),
-                            subtitle: Text(notice.date),
+                            title: Text(
+                              overflow: TextOverflow.ellipsis,
+
+                              notice.details,
+                            ),
+                            subtitle: Text(
+                              textAlign: TextAlign.right,
+                              notice.date,
+                            ),
                           );
                         },
                       ),
@@ -119,23 +132,23 @@ class _IoeExamState extends State<IoeExam> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    OutlinedButton(
+                    TextButton(
                       onPressed: () {
                         empty = false;
                         page = page == 0 ? page = 0 : (page - 1);
 
                         _getNotices();
                       },
-                      child: Text('Previous'),
+                      child: Text('<< Previous'),
                     ),
-                    OutlinedButton(
+                    TextButton(
                       onPressed: () {
                         if (empty == false) {
                           page = page + 1;
                           _getNotices();
                         }
                       },
-                      child: Text('Next'),
+                      child: Text('Next >>'),
                     ),
                   ],
                 ),
