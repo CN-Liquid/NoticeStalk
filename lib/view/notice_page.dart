@@ -79,15 +79,15 @@ class _NoticePageState extends State<NoticePage> {
               onPressed: () => _launchUrl(Uri.parse(widget.link)),
               child: Text(widget.link),
             ),
-            isError == true
-                ? Text('Unable To load document')
-                : pdfDocument == null
-                ? CircularProgressIndicator()
-                : Expanded(
-                    child: _isImage(pdfDocument!)
-                        ? Image.file(File(pdfDocument!))
-                        : PdfViewer.file(pdfDocument!),
-                  ),
+            Expanded(
+              child: isError == true
+                  ? Text('Unable To load document')
+                  : pdfDocument == null
+                  ? Center(child: CircularProgressIndicator())
+                  : _isImage(pdfDocument!)
+                  ? Image.file(File(pdfDocument!))
+                  : PdfViewer.file(pdfDocument!),
+            ),
           ],
         ),
       ),
