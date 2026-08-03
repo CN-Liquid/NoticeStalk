@@ -193,7 +193,12 @@ class NoticeRepository {
     final notice = result.data!;
 
     String? docPath = notice.docPath;
-    String docLink = notice.docLink;
+    String? docLink = notice.docLink;
+
+    if (docLink == null) {
+      return Result.failure('No Download link');
+    }
+
     if (notice.docPath == null) {
       final downloadResult = await NetworkService.download(docLink);
 
