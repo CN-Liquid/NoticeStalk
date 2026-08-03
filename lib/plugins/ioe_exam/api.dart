@@ -6,6 +6,8 @@ import 'package:notice_stalk/core/api.dart';
 import 'package:notice_stalk/core/notice.dart';
 import 'package:notice_stalk/core/result.dart';
 
+final logger = Logger();
+
 class IoeExam extends Api {
   IoeExam._private()
     : super(url: 'https://exam.ioe.tu.edu.np/notices', id: 'ioe_exam');
@@ -21,9 +23,13 @@ class IoeExam extends Api {
     for (int i = 0; i <= page; i++) {
       final modifiedUrl = '$url?cursor=$cursor';
 
-      final res = await dioClient.get(modifiedUrl);
-
-      document = parse(res.data);
+      try {
+        final res = await dioClient.get(modifiedUrl);
+        document = parse(res.data);
+      } catch (e) {
+        logger.e('Network error : $e');
+        return Result.failure('Unexpected error: $e');
+      }
 
       final nextLink = document.querySelector('a.page-link[rel="next"]');
 
