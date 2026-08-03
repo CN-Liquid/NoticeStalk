@@ -47,7 +47,7 @@ class NotificationManager {
       const NotificationDetails notificationDetails = NotificationDetails(
         android: androidNotificationDetails,
       );
-      final int uniqueId = title.hashCode.remainder(100000);
+      final int uniqueId = '$title$details'.hashCode;
 
       await flutterLocalNotificationPlugin.show(
         uniqueId,
