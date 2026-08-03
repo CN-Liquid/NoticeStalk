@@ -27,7 +27,7 @@ void main() async {
 
   final int helloAlarmID = 0;
   await AndroidAlarmManager.periodic(
-    const Duration(minutes: 1),
+    const Duration(minutes: 5),
     helloAlarmID,
     checkForUpdates,
   );
