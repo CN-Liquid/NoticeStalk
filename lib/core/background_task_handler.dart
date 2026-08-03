@@ -1,41 +1,35 @@
+import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:workmanager/workmanager.dart';
 import 'package:notice_stalk/repository/repository.dart';
 import 'package:notice_stalk/core/notification.dart';
 
-final clients = ['ioe_exam', 'ioe_pc'];
-
 @pragma('vm:entry-point')
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    if (task == 'check_for_updates') {
-      await NotificationManager.initialize();
-      for (final client in clients) {
-        NoticeRepository.instance.setClient(client);
-        final newNotices = await NoticeRepository.instance.fetchNotices();
+Future<void> checkForUpdates() async {
+  final clients = ['ioe_exam', 'ioe_pc'];
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationManager.initialize();
+  for (final client in clients) {
+    NoticeRepository.instance.setClient(client);
+    final newNotices = (client == 'ioe_exam')
+        ? await NoticeRepository.instance.fetchNoticesByCursor()
+        : await NoticeRepository.instance.fetchNotices();
 
-        if (!newNotices.isSuccess) {
-          await NotificationManager.show(
-            title: 'Failed to fetch notices',
-            details: newNotices.error!,
-          );
-          Logger().e(newNotices.error);
-          continue;
-        } else if (newNotices.data!.isEmpty) {
-          Logger().d('No new notices');
-          continue;
-        }
-        final notices = newNotices.data!;
-
-        for (final data in notices) {
-          await NotificationManager.show(
-            title: data.details,
-            details: data.date,
-          );
-        }
-      }
+    if (!newNotices.isSuccess) {
+      await NotificationManager.show(
+        title: 'Failed to fetch notices',
+        details: newNotices.error!,
+      );
+      Logger().e(newNotices.error);
+      continue;
+    } else if (newNotices.data!.isEmpty) {
+      await NotificationManager.show(title: 'No New Notices', details: client);
+      Logger().d('No new notices : $client');
+      continue;
     }
+    final notices = newNotices.data!;
 
-    return Future.value(true);
-  });
+    for (final data in notices) {
+      await NotificationManager.show(title: data.details, details: data.date);
+    }
+  }
 }

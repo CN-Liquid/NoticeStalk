@@ -2,20 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:notice_stalk/core/background_task_handler.dart';
 import 'package:notice_stalk/core/notification.dart';
-import 'package:workmanager/workmanager.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:notice_stalk/view/plugins.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  Workmanager().initialize(callbackDispatcher);
-
-  Workmanager().registerPeriodicTask(
-    "check_for_updates",
-    "check_for_updates",
-    frequency: const Duration(minutes: 15),
-  );
+  await AndroidAlarmManager.initialize();
 
   final notificationInitResult = await NotificationManager.initialize();
 
@@ -30,6 +24,13 @@ void main() async {
   }
 
   runApp(const MyApp());
+
+  final int helloAlarmID = 0;
+  await AndroidAlarmManager.periodic(
+    const Duration(minutes: 1),
+    helloAlarmID,
+    checkForUpdates,
+  );
 }
 
 class MyApp extends StatelessWidget {
