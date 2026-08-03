@@ -3,7 +3,7 @@ class Notice {
   final String date;
   final String details;
   final String link;
-  final String docLink;
+  final String? docLink;
   final String? docPath;
 
   const Notice({
