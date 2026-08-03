@@ -22,7 +22,6 @@ Future<void> checkForUpdates() async {
       Logger().e(newNotices.error);
       continue;
     } else if (newNotices.data!.isEmpty) {
-      await NotificationManager.show(title: 'No New Notices', details: client);
       Logger().d('No new notices : $client');
       continue;
     }
