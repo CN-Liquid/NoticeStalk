@@ -4,11 +4,12 @@ import 'package:path/path.dart';
 import 'package:notice_stalk/core/notice.dart';
 
 class NoticeDatabase {
-  NoticeDatabase._init();
+  NoticeDatabase._private();
 
-  static Database? _database;
+  static final NoticeDatabase instance = NoticeDatabase._private();
+  Database? _database;
 
-  static Future<Result<Database>> get database async {
+  Future<Result<Database>> get database async {
     if (_database != null) {
       return Result.success(_database!);
     }
@@ -18,7 +19,7 @@ class NoticeDatabase {
     return result;
   }
 
-  static Future<Result<Database>> _initDB(String filePath) async {
+  Future<Result<Database>> _initDB(String filePath) async {
     try {
       final dbPath = await getDatabasesPath();
       final path = join(dbPath, filePath);
@@ -33,7 +34,7 @@ class NoticeDatabase {
     }
   }
 
-  static Future _createDB(Database db, int version) async {
+  Future _createDB(Database db, int version) async {
     await db.execute("""CREATE TABLE Notices (
     id TEXT,
     date TEXT,
@@ -49,7 +50,7 @@ class NoticeDatabase {
     );
   }
 
-  static Future<Result<void>> close() async {
+  Future<Result<void>> close() async {
     if (_database == null) {
       return Result.success(null);
     }
@@ -64,7 +65,7 @@ class NoticeDatabase {
     }
   }
 
-  static Future<Result<bool>> insert(Notice notice) async {
+  Future<Result<bool>> insert(Notice notice) async {
     final result = await database;
     bool isInserted = false;
 
@@ -105,7 +106,7 @@ class NoticeDatabase {
     }
   }
 
-  static Future<Result<List<Map<String, dynamic>>>> fetchAllNotices() async {
+  Future<Result<List<Map<String, dynamic>>>> fetchAllNotices() async {
     final result = await database;
 
     if (!result.isSuccess) {
@@ -120,7 +121,7 @@ class NoticeDatabase {
     }
   }
 
-  static Future<Result<List<Notice>>> fetchNotices({
+  Future<Result<List<Notice>>> fetchNotices({
     required String id,
     int page = 0,
     String searchText = '',
@@ -174,7 +175,7 @@ class NoticeDatabase {
     }
   }
 
-  static Future<Result<Notice>> fetchNotice({
+  Future<Result<Notice>> fetchNotice({
     required String id,
     required String date,
     required String details,
@@ -212,11 +213,7 @@ class NoticeDatabase {
     }
   }
 
-  static Future<Result<void>> insertCursor(
-    String id,
-    int page,
-    String cursor,
-  ) async {
+  Future<Result<void>> insertCursor(String id, int page, String cursor) async {
     final result = await database;
 
     if (!result.isSuccess) {
@@ -234,7 +231,7 @@ class NoticeDatabase {
     }
   }
 
-  static Future<Result<String?>> getCursor(String id, int page) async {
+  Future<Result<String?>> getCursor(String id, int page) async {
     if (page == 0) {
       return Result.success('');
     }

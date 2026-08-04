@@ -33,7 +33,7 @@ class NoticeRepository {
   }
 
   Future<Result<Notice>> getNotice(String details, String date) async {
-    final result = await NoticeDatabase.fetchNotice(
+    final result = await NoticeDatabase.instance.fetchNotice(
       id: client.id,
       date: date,
       details: details,
@@ -49,7 +49,7 @@ class NoticeRepository {
     int page = 0,
     String searchText = '',
   }) async {
-    final result = await NoticeDatabase.fetchNotices(
+    final result = await NoticeDatabase.instance.fetchNotices(
       id: client.id,
       page: page,
       searchText: searchText,
@@ -68,7 +68,7 @@ class NoticeRepository {
         return Result.failure(result.error!);
       }
 
-      final newData = await NoticeDatabase.fetchNotices(
+      final newData = await NoticeDatabase.instance.fetchNotices(
         id: client.id,
         page: page,
       );
@@ -109,7 +109,7 @@ class NoticeRepository {
         link: data.link,
         docLink: data.docLink,
       );
-      final result = await NoticeDatabase.insert(notice);
+      final result = await NoticeDatabase.instance.insert(notice);
 
       if (!result.isSuccess) {
         logger.e('failed to insert notices');
@@ -152,7 +152,7 @@ class NoticeRepository {
           link: data.link,
           docLink: data.docLink,
         );
-        final result = await NoticeDatabase.insert(notice);
+        final result = await NoticeDatabase.instance.insert(notice);
 
         if (!result.isSuccess) {
           return Result.failure(result.error!);
@@ -163,7 +163,7 @@ class NoticeRepository {
         }
       }
 
-      final cursorResult = await NoticeDatabase.insertCursor(
+      final cursorResult = await NoticeDatabase.instance.insertCursor(
         client.id,
         page,
         cursor.data!,
@@ -183,7 +183,7 @@ class NoticeRepository {
     required String date,
     required String details,
   }) async {
-    final result = await NoticeDatabase.fetchNotice(
+    final result = await NoticeDatabase.instance.fetchNotice(
       id: client.id,
       date: date,
       details: details,
@@ -223,7 +223,7 @@ class NoticeRepository {
 
       docPath = downloadedFile.data!.path;
 
-      final insertResult = await NoticeDatabase.insert(
+      final insertResult = await NoticeDatabase.instance.insert(
         notice.copyWith(docPath: docPath, docLink: docLink),
       );
 
@@ -241,7 +241,10 @@ class NoticeRepository {
     if (page == 0) {
       return Result.success('');
     } else {
-      final cursorResult = await NoticeDatabase.getCursor(client.id, page - 1);
+      final cursorResult = await NoticeDatabase.instance.getCursor(
+        client.id,
+        page - 1,
+      );
 
       if (!cursorResult.isSuccess) {
         return Result.failure(cursorResult.error!);
@@ -265,7 +268,7 @@ class NoticeRepository {
   }
 
   Future<Result<void>> deleteFiles(Directory directory) async {
-    final noticesResult = await NoticeDatabase.fetchAllNotices();
+    final noticesResult = await NoticeDatabase.instance.fetchAllNotices();
 
     if (!noticesResult.isSuccess) {
       return Result.failure(noticesResult.error!);
@@ -281,7 +284,7 @@ class NoticeRepository {
         docPath: null,
       );
 
-      final insertResult = await NoticeDatabase.insert(noticeObj);
+      final insertResult = await NoticeDatabase.instance.insert(noticeObj);
 
       if (!insertResult.isSuccess) {
         return Result.failure('Error in Purging document reference');
