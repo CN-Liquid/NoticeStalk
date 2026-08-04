@@ -38,9 +38,6 @@ class NoticeRepository {
       date: date,
       details: details,
     );
-    if (!result.isSuccess) {
-      return result;
-    }
 
     return result;
   }
@@ -113,7 +110,8 @@ class NoticeRepository {
 
       if (!result.isSuccess) {
         logger.e('failed to insert notices');
-        return Result.failure(result.error!);
+        //Donot return if one insertion fails
+        //return Result.failure(result.error!);
       }
 
       if (result.data == true) {
@@ -136,31 +134,32 @@ class NoticeRepository {
     logger.d('Fetching');
 
     final fetchResult = await client.retrieveByCursor(cursor.data!);
-    bool isFetched = fetchResult.isSuccess;
-    if (isFetched) {
-      final notices = client.notices;
+    if (!fetchResult.isSuccess) {
+      return Result.failure(fetchResult.error!);
+    }
 
-      if (notices.isEmpty) {
-        return Result.failure('There are no notices in this page');
+    final notices = client.notices;
+
+    if (notices.isEmpty) {
+      return Result.failure('There are no notices in this page');
+    }
+
+    for (final data in notices) {
+      final notice = Notice(
+        id: client.id,
+        date: data.date,
+        details: data.details,
+        link: data.link,
+        docLink: data.docLink,
+      );
+      final result = await NoticeDatabase.instance.insert(notice);
+
+      if (!result.isSuccess) {
+        logger.e(result.error);
       }
 
-      for (final data in notices) {
-        final notice = Notice(
-          id: client.id,
-          date: data.date,
-          details: data.details,
-          link: data.link,
-          docLink: data.docLink,
-        );
-        final result = await NoticeDatabase.instance.insert(notice);
-
-        if (!result.isSuccess) {
-          return Result.failure(result.error!);
-        }
-
-        if (result.data == true) {
-          insertedNotices.add(data);
-        }
+      if (result.data == true) {
+        insertedNotices.add(data);
       }
 
       final cursorResult = await NoticeDatabase.instance.insertCursor(
@@ -170,13 +169,11 @@ class NoticeRepository {
       );
 
       if (!cursorResult.isSuccess) {
-        return Result.failure(cursorResult.error!);
+        logger.e(cursorResult.error);
       }
-
-      return Result.success(insertedNotices);
     }
 
-    return Result.failure('Unable to reach to the network');
+    return Result.success(insertedNotices);
   }
 
   Future<Result<String?>> getFile({
@@ -259,7 +256,7 @@ class NoticeRepository {
 
       final cursorRes = await client.getCursor(prevCursor!);
       if (!cursorRes.isSuccess) {
-        return Result.failure('There are no notices in this page');
+        return Result.failure('Unable to get cursor');
       }
       final cursor = cursorRes.data!;
 
