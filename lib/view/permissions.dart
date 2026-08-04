@@ -10,12 +10,14 @@ class Permissions extends StatefulWidget {
 
 class _PermissionsState extends State<Permissions> {
   PermissionStatus? notificationStatus;
+  PermissionStatus? scheduleExactAlarmStatus;
 
   Future<void> getNotificationStatus() async {
-    final status = await Permission.notification.status;
-
+    final notiStatus = await Permission.notification.status;
+    final alarmStatus = await Permission.scheduleExactAlarm.status;
     setState(() {
-      notificationStatus = status;
+      notificationStatus = notiStatus;
+      scheduleExactAlarmStatus = alarmStatus;
     });
   }
 
@@ -43,6 +45,24 @@ class _PermissionsState extends State<Permissions> {
                   if (result.isGranted) {
                     setState(() {
                       notificationStatus = PermissionStatus.granted;
+                    });
+                  }
+                }
+              },
+            ),
+          ),
+          ListTile(
+            title: Text('Schedule Alarm permission'),
+            trailing: Checkbox(
+              tristate: true,
+              value: scheduleExactAlarmStatus?.isGranted,
+              onChanged: (value) async {
+                if (value == true) {
+                  final result = await Permission.scheduleExactAlarm.request();
+
+                  if (result.isGranted) {
+                    setState(() {
+                      scheduleExactAlarmStatus = PermissionStatus.granted;
                     });
                   }
                 }
