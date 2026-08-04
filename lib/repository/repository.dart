@@ -21,9 +21,11 @@ class NoticeRepository {
     switch (clientId) {
       case 'ioe_exam':
         client = IoeExam.instance;
+        IoeExam.instance.notices.clear();
         return Result.success(client.id);
       case 'ioe_pc':
         client = IoePc.instance;
+        IoePc.instance.notices.clear();
         return Result.success(client.id);
       default:
         return Result.failure('Invalid client id');
@@ -110,6 +112,7 @@ class NoticeRepository {
       final result = await NoticeDatabase.insert(notice);
 
       if (!result.isSuccess) {
+        logger.e('failed to insert notices');
         return Result.failure(result.error!);
       }
 
