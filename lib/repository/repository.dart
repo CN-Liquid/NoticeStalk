@@ -32,12 +32,8 @@ class NoticeRepository {
     }
   }
 
-  Future<Result<Notice>> getNotice(String details, String date) async {
-    final result = await NoticeDatabase.instance.fetchNotice(
-      id: client.id,
-      date: date,
-      details: details,
-    );
+  Future<Result<Notice>> getNotice(String link) async {
+    final result = await NoticeDatabase.instance.fetchNotice(link: link);
 
     return result;
   }
@@ -110,6 +106,7 @@ class NoticeRepository {
 
       if (!result.isSuccess) {
         logger.e('failed to insert notices');
+        continue;
         //Donot return if one insertion fails
         //return Result.failure(result.error!);
       }
@@ -156,35 +153,29 @@ class NoticeRepository {
 
       if (!result.isSuccess) {
         logger.e(result.error);
+        continue;
       }
 
       if (result.data == true) {
         insertedNotices.add(data);
       }
+    }
 
-      final cursorResult = await NoticeDatabase.instance.insertCursor(
-        client.id,
-        page,
-        cursor.data!,
-      );
+    final cursorResult = await NoticeDatabase.instance.insertCursor(
+      client.id,
+      page,
+      cursor.data!,
+    );
 
-      if (!cursorResult.isSuccess) {
-        logger.e(cursorResult.error);
-      }
+    if (!cursorResult.isSuccess) {
+      logger.e(cursorResult.error);
     }
 
     return Result.success(insertedNotices);
   }
 
-  Future<Result<String?>> getFile({
-    required String date,
-    required String details,
-  }) async {
-    final result = await NoticeDatabase.instance.fetchNotice(
-      id: client.id,
-      date: date,
-      details: details,
-    );
+  Future<Result<String?>> getFile({required String link}) async {
+    final result = await NoticeDatabase.instance.fetchNotice(link: link);
 
     if (!result.isSuccess) {
       return Result.failure(result.error!);

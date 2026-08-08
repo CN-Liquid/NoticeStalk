@@ -3,6 +3,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:notice_stalk/core/notice.dart';
 
+// TODO : Set link as primary key
+
 class NoticeDatabase {
   NoticeDatabase._private();
 
@@ -42,7 +44,7 @@ class NoticeDatabase {
     link TEXT,
     docLink TEXT NULL,
     docPath TEXT NULL,
-    PRIMARY KEY (date,details)
+    PRIMARY KEY (link)
     )""");
 
     await db.execute(
@@ -73,11 +75,7 @@ class NoticeDatabase {
       return Result.failure(result.error!);
     }
 
-    final noticeResult = await fetchNotice(
-      id: notice.id,
-      date: notice.date,
-      details: notice.details,
-    );
+    final noticeResult = await fetchNotice(link: notice.link);
 
     if (!noticeResult.isSuccess &&
         noticeResult.error == 'Notice not found in database') {
@@ -175,11 +173,7 @@ class NoticeDatabase {
     }
   }
 
-  Future<Result<Notice>> fetchNotice({
-    required String id,
-    required String date,
-    required String details,
-  }) async {
+  Future<Result<Notice>> fetchNotice({required String link}) async {
     final result = await database;
 
     if (!result.isSuccess) {
@@ -189,8 +183,8 @@ class NoticeDatabase {
     try {
       final data = await result.data!.query(
         'Notices',
-        where: 'date = ? AND details = ? AND id=?',
-        whereArgs: [date, details, id],
+        where: 'link = ?',
+        whereArgs: [link],
       );
 
       if (data.isEmpty) {
