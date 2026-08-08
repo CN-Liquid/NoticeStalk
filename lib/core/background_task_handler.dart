@@ -16,7 +16,7 @@ Future<void> checkForUpdates() async {
 
     if (!newNotices.isSuccess) {
       await NotificationManager.show(
-        title: 'Failed to fetch notices',
+        title: 'Failed to fetch notices $client',
         details: newNotices.error!,
       );
       Logger().e(newNotices.error);
