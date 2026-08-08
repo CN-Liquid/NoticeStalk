@@ -1,9 +1,11 @@
+import 'package:notice_stalk/core/dio_client.dart';
 import 'package:notice_stalk/core/result.dart';
 import 'package:notice_stalk/core/notice.dart';
 
 class Api {
   final String url;
   final String id;
+  final dioClient = DioClient.instance.client;
   List<Notice> notices = [];
 
   Api({required this.url, required this.id});

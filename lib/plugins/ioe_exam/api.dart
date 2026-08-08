@@ -1,5 +1,4 @@
 import 'package:html/dom.dart' as dom;
-import 'package:dio/dio.dart';
 import 'package:html/parser.dart';
 import 'package:logger/logger.dart';
 import 'package:notice_stalk/core/api.dart';
@@ -13,7 +12,6 @@ class IoeExam extends Api {
     : super(url: 'https://exam.ioe.tu.edu.np/notices', id: 'ioe_exam');
 
   static final IoeExam instance = IoeExam._private();
-  final dioClient = Dio();
 
   @override
   Future<Result<void>> retrieve({int page = 0}) async {

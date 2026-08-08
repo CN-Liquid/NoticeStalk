@@ -1,5 +1,4 @@
 import 'package:html/dom.dart' as dom;
-import 'package:dio/dio.dart';
 import 'package:html/parser.dart';
 import 'package:logger/logger.dart';
 import 'package:notice_stalk/core/api.dart';
@@ -16,7 +15,6 @@ class IoePc extends Api {
       );
 
   static final IoePc instance = IoePc._private();
-  final client = Dio();
 
   @override
   Future<Result<void>> retrieve({int page = 0}) async {
@@ -25,7 +23,7 @@ class IoePc extends Api {
     final modifiedUrl = '$url/${page + 1}';
 
     try {
-      final res = await client.get(modifiedUrl);
+      final res = await dioClient.get(modifiedUrl);
       document = parse(res.data);
     } catch (e) {
       logger.e('Non-Dio Exception: $e');
@@ -72,7 +70,7 @@ class IoePc extends Api {
   Future<Result<String?>> getDocumentLink(String noticeLink) async {
     dom.Document? document;
     try {
-      final response = await client.get(noticeLink);
+      final response = await dioClient.get(noticeLink);
       document = parse(response.data);
 
       final link = document.querySelector(
